@@ -157,7 +157,32 @@ namespace octachoron {
             return Role::fromRaw(m_id & 0b11);
         }
 
+        [[nodiscard]] constexpr bool isStack() const {
+            return m_id != kNoneId && m_id > kScissorsId;
+        }
+
+        [[nodiscard]] constexpr PieceType upper() const {
+            assert(isStack());
+            return fromRaw(m_id & 0b11);
+        }
+
+        [[nodiscard]] constexpr PieceType lower() const {
+            assert(isStack());
+            return fromRaw(m_id >> 2);
+        }
+
         [[nodiscard]] constexpr Piece withColor(Color c) const;
+
+        [[nodiscard]] constexpr PieceType stackedOn(PieceType other) const {
+            assert(m_id != kNoneId);
+            assert(m_id != kWiseId);
+            assert(m_id <= kScissorsId);
+
+            assert(other.m_id != kNoneId);
+            assert(other.m_id <= kScissorsId);
+
+            return fromRaw((other.m_id << 2) | m_id);
+        }
 
         [[nodiscard]] static constexpr PieceType fromRaw(u8 id) {
             assert(id <= kNoneId);
@@ -254,7 +279,37 @@ namespace octachoron {
 
         [[nodiscard]] constexpr Color color() const {
             assert(m_id != kNoneId);
-            return Color::fromRaw(m_id & 1);
+            return Color::fromRaw(m_id & 0b1);
+        }
+
+        [[nodiscard]] constexpr bool isStack() const {
+            return m_id != kNoneId && m_id > kBlackScissorsId;
+        }
+
+        [[nodiscard]] constexpr Piece upper() const {
+            assert(isStack());
+            return type().upper().withColor(color());
+        }
+
+        [[nodiscard]] constexpr Piece lower() const {
+            assert(isStack());
+            return type().lower().withColor(color());
+        }
+
+        [[nodiscard]] constexpr Piece stackedOn(PieceType other) const {
+            assert(m_id != kNoneId);
+            assert(m_id != kWhiteWiseId);
+            assert(m_id != kBlackWiseId);
+            assert(m_id <= kBlackScissorsId);
+
+            assert(other != PieceTypes::kNone);
+            assert(other.raw() <= PieceTypes::kScissors.raw());
+
+            return fromRaw((other.raw() << 3) | m_id);
+        }
+
+        [[nodiscard]] constexpr Piece stackedOn(Piece other) const {
+            return stackedOn(other.type());
         }
 
         [[nodiscard]] static constexpr Piece fromRaw(u8 id) {
