@@ -78,6 +78,8 @@ namespace octachoron {
         static constexpr Color kWhite{Color::kWhiteId};
         static constexpr Color kBlack{Color::kBlackId};
         static constexpr Color kNone{Color::kNoneId};
+
+        static constexpr usize kCount = kNone.idx();
     };
 
     class Role {
@@ -134,6 +136,8 @@ namespace octachoron {
         static constexpr Role kPaper{Role::kPaperId};
         static constexpr Role kScissors{Role::kScissorsId};
         static constexpr Role kNone{Role::kNoneId};
+
+        static constexpr usize kCount = kNone.idx();
     };
 
     class Piece;
@@ -232,6 +236,8 @@ namespace octachoron {
     };
 
     struct PieceTypes {
+        PieceTypes() = delete;
+
         static constexpr PieceType kWise{PieceType::kWiseId};
         static constexpr PieceType kRock{PieceType::kRockId};
         static constexpr PieceType kPaper{PieceType::kPaperId};
@@ -250,6 +256,8 @@ namespace octachoron {
         static constexpr PieceType kPaperOnWise{PieceType::kPaperOnWiseId};
         static constexpr PieceType kScissorsOnWise{PieceType::kScissorsOnWiseId};
         static constexpr PieceType kNone{PieceType::kNoneId};
+
+        static constexpr usize kCount = kNone.idx();
     };
 
     class Piece {
@@ -424,5 +432,152 @@ namespace octachoron {
         static constexpr Piece kWhiteScissorsOnWise{Piece::kWhiteScissorsOnWiseId};
         static constexpr Piece kBlackScissorsOnWise{Piece::kBlackScissorsOnWiseId};
         static constexpr Piece kNone{Piece::kNoneId};
+
+        static constexpr usize kCount = kNone.idx();
+    };
+
+    class Cell {
+    public:
+        constexpr Cell() = default;
+
+        constexpr Cell(const Cell&) = default;
+        constexpr Cell(Cell&&) = default;
+
+        [[nodiscard]] constexpr u8 raw() const {
+            return m_id;
+        }
+
+        [[nodiscard]] constexpr usize idx() const {
+            return static_cast<usize>(m_id);
+        }
+
+        [[nodiscard]] constexpr u64 bit() const {
+            assert(m_id != kNoneId);
+            return u64{1} << m_id;
+        }
+
+        [[nodiscard]] static constexpr Cell fromRaw(u8 id) {
+            assert(id <= kNoneId);
+            return Cell{id};
+        }
+
+        [[nodiscard]] constexpr explicit operator bool() const {
+            return m_id != kNoneId;
+        }
+
+        [[nodiscard]] constexpr bool operator==(const Cell&) const = default;
+
+        constexpr Cell& operator=(const Cell&) = default;
+        constexpr Cell& operator=(Cell&&) = default;
+
+    private:
+        explicit constexpr Cell(u8 id) :
+                m_id{id} {}
+
+        u8 m_id{};
+
+        enum : u8 {
+            kA1Id,
+            kA2Id,
+            kA3Id,
+            kA4Id,
+            kA5Id,
+            kA6Id,
+            kB1Id,
+            kB2Id,
+            kB3Id,
+            kB4Id,
+            kB5Id,
+            kB6Id,
+            kB7Id,
+            kC1Id,
+            kC2Id,
+            kC3Id,
+            kC4Id,
+            kC5Id,
+            kC6Id,
+            kD1Id,
+            kD2Id,
+            kD3Id,
+            kD4Id,
+            kD5Id,
+            kD6Id,
+            kD7Id,
+            kE1Id,
+            kE2Id,
+            kE3Id,
+            kE4Id,
+            kE5Id,
+            kE6Id,
+            kF1Id,
+            kF2Id,
+            kF3Id,
+            kF4Id,
+            kF5Id,
+            kF6Id,
+            kF7Id,
+            kG1Id,
+            kG2Id,
+            kG3Id,
+            kG4Id,
+            kG5Id,
+            kG6Id,
+            kNoneId,
+        };
+
+        friend struct Cells;
+    };
+
+    struct Cells {
+        Cells() = delete;
+
+        static constexpr Cells kA1{Cells::kA1Id};
+        static constexpr Cells kA2{Cells::kA2Id};
+        static constexpr Cells kA3{Cells::kA3Id};
+        static constexpr Cells kA4{Cells::kA4Id};
+        static constexpr Cells kA5{Cells::kA5Id};
+        static constexpr Cells kA6{Cells::kA6Id};
+        static constexpr Cells kB1{Cells::kB1Id};
+        static constexpr Cells kB2{Cells::kB2Id};
+        static constexpr Cells kB3{Cells::kB3Id};
+        static constexpr Cells kB4{Cells::kB4Id};
+        static constexpr Cells kB5{Cells::kB5Id};
+        static constexpr Cells kB6{Cells::kB6Id};
+        static constexpr Cells kB7{Cells::kB7Id};
+        static constexpr Cells kC1{Cells::kC1Id};
+        static constexpr Cells kC2{Cells::kC2Id};
+        static constexpr Cells kC3{Cells::kC3Id};
+        static constexpr Cells kC4{Cells::kC4Id};
+        static constexpr Cells kC5{Cells::kC5Id};
+        static constexpr Cells kC6{Cells::kC6Id};
+        static constexpr Cells kD1{Cells::kD1Id};
+        static constexpr Cells kD2{Cells::kD2Id};
+        static constexpr Cells kD3{Cells::kD3Id};
+        static constexpr Cells kD4{Cells::kD4Id};
+        static constexpr Cells kD5{Cells::kD5Id};
+        static constexpr Cells kD6{Cells::kD6Id};
+        static constexpr Cells kD7{Cells::kD7Id};
+        static constexpr Cells kE1{Cells::kE1Id};
+        static constexpr Cells kE2{Cells::kE2Id};
+        static constexpr Cells kE3{Cells::kE3Id};
+        static constexpr Cells kE4{Cells::kE4Id};
+        static constexpr Cells kE5{Cells::kE5Id};
+        static constexpr Cells kE6{Cells::kE6Id};
+        static constexpr Cells kF1{Cells::kF1Id};
+        static constexpr Cells kF2{Cells::kF2Id};
+        static constexpr Cells kF3{Cells::kF3Id};
+        static constexpr Cells kF4{Cells::kF4Id};
+        static constexpr Cells kF5{Cells::kF5Id};
+        static constexpr Cells kF6{Cells::kF6Id};
+        static constexpr Cells kF7{Cells::kF7Id};
+        static constexpr Cells kG1{Cells::kG1Id};
+        static constexpr Cells kG2{Cells::kG2Id};
+        static constexpr Cells kG3{Cells::kG3Id};
+        static constexpr Cells kG4{Cells::kG4Id};
+        static constexpr Cells kG5{Cells::kG5Id};
+        static constexpr Cells kG6{Cells::kG6Id};
+        static constexpr Cells kNone{Cells::kNoneId};
+
+        static constexpr usize kCount = kNone.idx();
     };
 } // namespace octachoron
