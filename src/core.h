@@ -224,7 +224,6 @@ namespace octachoron {
         static constexpr PieceType kRockOnWise{PieceType::kRockOnWiseId};
         static constexpr PieceType kPaperOnWise{PieceType::kPaperOnWiseId};
         static constexpr PieceType kScissorsOnWise{PieceType::kScissorsOnWiseId};
-
         static constexpr PieceType kNone{PieceType::kNoneId};
     };
 
