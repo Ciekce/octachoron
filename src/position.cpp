@@ -92,8 +92,6 @@ namespace octachoron {
             return Pieces::kNone;
         };
 
-        m_mailbox = {};
-
         for (u8 cellId = 0; cellId < Cells::kNone.raw(); ++cellId) {
             const auto cell = Cell::fromRaw(cellId);
             m_mailbox[cell.idx()] = pieceOnBbs(cell);
