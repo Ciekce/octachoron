@@ -145,6 +145,38 @@ namespace octachoron {
             return *this;
         }
 
+        [[nodiscard]] constexpr bool getCell(Cell cell) const {
+            return (m_bb & cell.bit()) != 0;
+        }
+
+        constexpr Bitboard& setCell(Cell cell) {
+            m_bb |= cell.bit();
+            return *this;
+        }
+
+        constexpr Bitboard& clearCell(Cell cell) {
+            m_bb &= ~cell.bit();
+            return *this;
+        }
+
+        constexpr Bitboard& toggleCell(Cell cell) {
+            m_bb ^= cell.bit();
+            return *this;
+        }
+
+        constexpr Bitboard& setCell(Cell sq, bool set) {
+            if (set) {
+                return setCell(sq);
+            } else {
+                return clearCell(sq);
+            }
+        }
+
+        constexpr Bitboard& clear() {
+            m_bb = 0;
+            return *this;
+        }
+
         [[nodiscard]] constexpr Bitboard shiftNorthWest() const {
             return Bitboard{(m_bb & ~(kBdf1 | kRowG)) << offsets::kNorthWest};
         }
@@ -191,7 +223,9 @@ namespace octachoron {
     private:
         u64 m_bb{};
 
-    public:
+        static constexpr u64 kAll = UINT64_C(0x1fffffffffff);
+        static constexpr u64 kEmpty = 0;
+
         static constexpr u64 kRowA = UINT64_C(0x3f);
         static constexpr u64 kRowB = UINT64_C(0x1fc0);
         static constexpr u64 kRowC = UINT64_C(0x7e000);
@@ -212,5 +246,30 @@ namespace octachoron {
 
         static constexpr u64 kBdf1 = UINT64_C(0x100080040);
         static constexpr u64 kBdf7 = UINT64_C(0x4002001000);
+
+        friend struct Bitboards;
+    };
+
+    struct Bitboards {
+        Bitboards() = delete;
+
+        static constexpr Bitboard kAll = Bitboard{Bitboard::kAll};
+        static constexpr Bitboard kEmpty = Bitboard{Bitboard::kEmpty};
+
+        static constexpr Bitboard kRowA = Bitboard{Bitboard::kRowA};
+        static constexpr Bitboard kRowB = Bitboard{Bitboard::kRowB};
+        static constexpr Bitboard kRowC = Bitboard{Bitboard::kRowC};
+        static constexpr Bitboard kRowD = Bitboard{Bitboard::kRowD};
+        static constexpr Bitboard kRowE = Bitboard{Bitboard::kRowE};
+        static constexpr Bitboard kRowF = Bitboard{Bitboard::kRowF};
+        static constexpr Bitboard kRowG = Bitboard{Bitboard::kRowG};
+
+        static constexpr Bitboard kColumn1 = Bitboard{Bitboard::kColumn1};
+        static constexpr Bitboard kColumn2 = Bitboard{Bitboard::kColumn2};
+        static constexpr Bitboard kColumn3 = Bitboard{Bitboard::kColumn3};
+        static constexpr Bitboard kColumn4 = Bitboard{Bitboard::kColumn4};
+        static constexpr Bitboard kColumn5 = Bitboard{Bitboard::kColumn5};
+        static constexpr Bitboard kColumn6 = Bitboard{Bitboard::kColumn6};
+        static constexpr Bitboard kColumn7 = Bitboard{Bitboard::kColumn7};
     };
 } // namespace octachoron

@@ -20,9 +20,12 @@
 
 #include <iostream>
 
+#include "position.h"
+
 using namespace octachoron;
 
 i32 main() {
-    std::cout << "Hello, World!" << std::endl;
+    const auto pos = Position::startpos();
+    std::cout << pos << std::endl;
     return 0;
 }

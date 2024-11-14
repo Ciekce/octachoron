@@ -3,4 +3,4 @@ project(octachoron)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(octachoron src/main.cpp src/types.h src/core.h src/bitboard.h)
+add_executable(octachoron src/main.cpp src/types.h src/core.h src/bitboard.h src/position.h src/position.cpp)

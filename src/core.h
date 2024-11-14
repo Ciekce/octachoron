@@ -21,6 +21,7 @@
 #include "types.h"
 
 #include <cassert>
+#include <iostream>
 
 namespace octachoron {
     class Color {
@@ -172,7 +173,7 @@ namespace octachoron {
 
         [[nodiscard]] constexpr PieceType lower() const {
             assert(isStack());
-            return fromRaw(m_id >> 2);
+            return fromRaw((m_id >> 2) & 0b11);
         }
 
         [[nodiscard]] constexpr Piece withColor(Color c) const;
@@ -233,6 +234,33 @@ namespace octachoron {
         };
 
         friend struct PieceTypes;
+
+        friend inline std::ostream& operator<<(std::ostream& stream, PieceType pt) {
+            static constexpr auto kPieceTypeToChar = [](PieceType pt) {
+                switch (pt.raw()) {
+                    case kWiseId:
+                        return 'w';
+                    case kRockId:
+                        return 'r';
+                    case kPaperId:
+                        return 'p';
+                    case kScissorsId:
+                        return 's';
+                    default:
+                        return '?';
+                }
+            };
+
+            if (pt.raw() == kNoneId) {
+                stream << "..";
+            } else if (pt.isStack()) {
+                stream << kPieceTypeToChar(pt.upper()) << kPieceTypeToChar(pt.lower());
+            } else {
+                stream << kPieceTypeToChar(pt) << '.';
+            }
+
+            return stream;
+        }
     };
 
     struct PieceTypes {
@@ -385,6 +413,45 @@ namespace octachoron {
         };
 
         friend struct Pieces;
+
+        friend inline std::ostream& operator<<(std::ostream& stream, Piece piece) {
+            static constexpr auto kPieceToChar = [](Piece piece) {
+                switch (piece.raw()) {
+                    case kWhiteWiseId:
+                        return 'W';
+                    case kBlackWiseId:
+                        return 'w';
+                    case kWhiteRockId:
+                        return 'R';
+                    case kBlackRockId:
+                        return 'r';
+                    case kWhitePaperId:
+                        return 'P';
+                    case kBlackPaperId:
+                        return 'p';
+                    case kWhiteScissorsId:
+                        return 'S';
+                    case kBlackScissorsId:
+                        return 's';
+                    default:
+                        return '?';
+                }
+            };
+
+            if (piece.raw() == kNoneId) {
+                stream << "..";
+            } else if (piece.isStack()) {
+                if (piece.lower().raw() > 7) {
+                    stream << kPieceToChar(piece.upper()) << "{" << piece.lower().idx() << "?}";
+                } else {
+                    stream << kPieceToChar(piece.upper()) << kPieceToChar(piece.lower());
+                }
+            } else {
+                stream << kPieceToChar(piece) << '.';
+            }
+
+            return stream;
+        }
     };
 
     constexpr Piece PieceType::withColor(Color c) const {
@@ -454,6 +521,16 @@ namespace octachoron {
         [[nodiscard]] constexpr u64 bit() const {
             assert(m_id != kNoneId);
             return u64{1} << m_id;
+        }
+
+        [[nodiscard]] constexpr Cell offset(i32 offset) const {
+            assert(m_id + offset >= 0);
+            assert(m_id + offset < kNoneId);
+            return fromRaw(m_id + offset);
+        }
+
+        [[nodiscard]] constexpr Cell rotate() const {
+            return fromRaw(kNoneId - m_id - 1);
         }
 
         [[nodiscard]] static constexpr Cell fromRaw(u8 id) {
@@ -526,6 +603,44 @@ namespace octachoron {
         };
 
         friend struct Cells;
+
+        friend inline std::ostream& operator<<(std::ostream& stream, Cell cell) {
+            if (cell.raw() == kNoneId) {
+                stream << "??";
+                return stream;
+            }
+
+            i32 rowOffset = -1;
+
+            if (cell.raw() <= kA6Id) {
+                stream << 'A';
+                rowOffset = kA1Id;
+            } else if (cell.raw() <= kB7Id) {
+                stream << 'B';
+                rowOffset = kB1Id;
+            } else if (cell.raw() <= kC6Id) {
+                stream << 'C';
+                rowOffset = kC1Id;
+            } else if (cell.raw() <= kD7Id) {
+                stream << 'D';
+                rowOffset = kD1Id;
+            } else if (cell.raw() <= kE6Id) {
+                stream << 'E';
+                rowOffset = kE1Id;
+            } else if (cell.raw() <= kF7Id) {
+                stream << 'F';
+                rowOffset = kF1Id;
+            } else if (cell.raw() <= kG6Id) {
+                stream << 'G';
+                rowOffset = kG1Id;
+            }
+
+            assert(rowOffset != -1);
+
+            stream << static_cast<char>('1' + (cell.idx() - rowOffset));
+
+            return stream;
+        }
     };
 
     struct Cells {
