@@ -20,6 +20,8 @@
 
 #include "types.h"
 
+#include <iostream>
+
 #include "core.h"
 
 namespace octachoron {
@@ -49,6 +51,10 @@ namespace octachoron {
 
         [[nodiscard]] constexpr bool isSingleUnstack() const {
             return (m_move >> kSingleUnstackShift) & kSingleUnstackMask;
+        }
+
+        [[nodiscard]] constexpr bool isNull() const {
+            return m_move == 0;
         }
 
         [[nodiscard]] constexpr bool operator==(const Move&) const = default;
@@ -97,6 +103,27 @@ namespace octachoron {
                 m_move{move} {}
 
         u32 m_move{};
+
+        inline friend std::ostream& operator<<(std::ostream& stream, Move move) {
+            if (move.isNull()) {
+                stream << "0000";
+                return stream;
+            }
+
+            stream << move.from();
+
+            if (move.isSingleUnstack()) {
+                stream << move.from();
+            }
+
+            stream << move.to();
+
+            if (move.isDouble()) {
+                stream << move.to2();
+            }
+
+            return stream;
+        }
     };
 
     constexpr Move kNullMove{};

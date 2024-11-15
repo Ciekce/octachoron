@@ -676,25 +676,25 @@ namespace octachoron {
             i32 rowOffset = -1;
 
             if (cell.raw() <= kA6Id) {
-                stream << 'A';
+                stream << 'a';
                 rowOffset = kA1Id;
             } else if (cell.raw() <= kB7Id) {
-                stream << 'B';
+                stream << 'b';
                 rowOffset = kB1Id;
             } else if (cell.raw() <= kC6Id) {
-                stream << 'C';
+                stream << 'c';
                 rowOffset = kC1Id;
             } else if (cell.raw() <= kD7Id) {
-                stream << 'D';
+                stream << 'd';
                 rowOffset = kD1Id;
             } else if (cell.raw() <= kE6Id) {
-                stream << 'E';
+                stream << 'e';
                 rowOffset = kE1Id;
             } else if (cell.raw() <= kF7Id) {
-                stream << 'F';
+                stream << 'f';
                 rowOffset = kF1Id;
             } else if (cell.raw() <= kG6Id) {
-                stream << 'G';
+                stream << 'g';
                 rowOffset = kG1Id;
             }
 

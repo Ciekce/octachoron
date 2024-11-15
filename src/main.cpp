@@ -30,8 +30,9 @@ i32 main() {
 
     std::cout << std::endl;
 
-    const auto after = startpos.applyMove(Move::makeSingleUnstack(Cells::kB4, Cells::kD3));
+    const auto after = startpos.applyMove(Move::makeSingleUnstack(Cells::kB4, Cells::kC3));
     std::cout << after << std::endl;
+    std::cout << Move::makeSingleUnstack(Cells::kB4, Cells::kC3) << std::endl;
 
     return 0;
 }
