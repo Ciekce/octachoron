@@ -507,7 +507,7 @@ namespace octachoron {
                 if (piece.lower().raw() > 7) {
                     stream << kPieceToChar(piece.upper()) << "{" << piece.lower().idx() << "?}";
                 } else {
-                    stream << kPieceToChar(piece.upper()) << kPieceToChar(piece.lower());
+                    stream << kPieceToChar(piece.lower()) << kPieceToChar(piece.upper());
                 }
             } else {
                 stream << kPieceToChar(piece) << '.';

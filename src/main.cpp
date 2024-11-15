@@ -27,5 +27,11 @@ using namespace octachoron;
 i32 main() {
     const auto startpos = Position::startpos();
     std::cout << startpos << std::endl;
+
+    std::cout << std::endl;
+
+    const auto after = startpos.applyMove(Move::makeSingleUnstack(Cells::kB4, Cells::kD3));
+    std::cout << after << std::endl;
+
     return 0;
 }

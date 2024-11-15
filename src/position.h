@@ -24,8 +24,10 @@
 #include <iostream>
 #include <span>
 #include <string_view>
+#include <utility>
 
 #include "bitboard.h"
+#include "move.h"
 
 namespace octachoron {
     class Position {
@@ -36,6 +38,8 @@ namespace octachoron {
 
         constexpr Position(const Position&) = default;
         constexpr Position(Position&&) = default;
+
+        [[nodiscard]] Position applyMove(Move move) const;
 
         [[nodiscard]] Bitboard colorBb(Color color) const {
             assert(color != Colors::kNone);
@@ -121,6 +125,20 @@ namespace octachoron {
 
         u8 m_halfmoves{};
         u16 m_fullmoves{1};
+
+        // -> captured
+        Piece addPiece(Piece piece, Cell cell);
+        void removePiece(Piece piece, Cell cell);
+
+        void replacePiece(Piece piece, Cell cell);
+
+        // -> stacked
+        Piece addStack(Piece upper, Piece lower, Cell cell);
+
+        // -> (result, captured)
+        std::pair<Piece, Piece> movePiece(Piece piece, Cell from, Cell to);
+
+        void flipCells(Piece piece, Bitboard mask);
 
         friend inline std::ostream& operator<<(std::ostream& stream, const Position& pos) {
             const auto printSixLine = [&](Cell firstCell) {
