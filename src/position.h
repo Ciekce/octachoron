@@ -22,6 +22,8 @@
 
 #include <array>
 #include <iostream>
+#include <span>
+#include <string_view>
 
 #include "bitboard.h"
 
@@ -60,11 +62,23 @@ namespace octachoron {
             return m_mailbox[cell.idx()];
         }
 
+        [[nodiscard]] Color stm() const {
+            return m_whiteToMove ? Colors::kWhite : Colors::kBlack;
+        }
+
         [[nodiscard]] u32 halfmoves() const {
             return m_halfmoves;
         }
 
+        [[nodiscard]] u32 fullmoves() const {
+            return m_fullmoves;
+        }
+
         void resetToStartpos();
+        bool resetFromFenParts(std::span<std::string_view> fen);
+        bool resetFromFen(std::string_view fen);
+
+        [[nodiscard]] constexpr bool operator==(const Position&) const = default;
 
         constexpr Position& operator=(const Position&) = default;
         constexpr Position& operator=(Position&&) = default;
@@ -75,6 +89,26 @@ namespace octachoron {
             return pos;
         }
 
+        [[nodiscard]] static constexpr std::optional<Position> fromFenParts(std::span<std::string_view> fen) {
+            Position pos{};
+
+            if (pos.resetFromFenParts(fen)) {
+                return pos;
+            } else {
+                return {};
+            }
+        }
+
+        [[nodiscard]] static constexpr std::optional<Position> fromFen(std::string_view fen) {
+            Position pos{};
+
+            if (pos.resetFromFen(fen)) {
+                return pos;
+            } else {
+                return {};
+            }
+        }
+
     private:
         std::array<Bitboard, Colors::kCount> m_colors{};
         std::array<Bitboard, PieceTypes::kCount> m_pieces{};
@@ -83,9 +117,10 @@ namespace octachoron {
 
         std::array<Piece, Cells::kCount> m_mailbox{};
 
-        u8 m_halfmoves{};
+        bool m_whiteToMove{true};
 
-        void regenMailbox();
+        u8 m_halfmoves{};
+        u16 m_fullmoves{1};
 
         friend inline std::ostream& operator<<(std::ostream& stream, const Position& pos) {
             const auto printSixLine = [&](Cell firstCell) {
@@ -117,6 +152,9 @@ namespace octachoron {
             printSevenLine(Cells::kB1);
             stream << '\n';
             printSixLine(Cells::kA1);
+
+            stream << "\n\n";
+            stream << (pos.m_whiteToMove ? "White" : "Black") << " to move";
 
             return stream;
         }

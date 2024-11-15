@@ -18,83 +18,106 @@
 
 #include "position.h"
 
+#include "util/parse.h"
+#include "util/split.h"
+
 namespace octachoron {
     void Position::resetToStartpos() {
-        m_colors[Colors::kWhite.idx()] = Bitboard{UINT64_C(0x1fff)};
-        m_colors[Colors::kBlack.idx()] = Bitboard{UINT64_C(0x1fff00000000)};
-
-        m_pieces = {};
-
-        m_pieces[PieceTypes::kRock.idx()]
-            .setCell(Cells::kA1)
-            .setCell(Cells::kA4)
-            .setCell(Cells::kB3)
-            .setCell(Cells::kB6)
-            .setCell(Cells::kF2)
-            .setCell(Cells::kF5)
-            .setCell(Cells::kG3)
-            .setCell(Cells::kG6);
-
-        m_pieces[PieceTypes::kPaper.idx()]
-            .setCell(Cells::kA2)
-            .setCell(Cells::kA5)
-            .setCell(Cells::kB1)
-            .setCell(Cells::kB7)
-            .setCell(Cells::kF1)
-            .setCell(Cells::kF7)
-            .setCell(Cells::kG2)
-            .setCell(Cells::kG5);
-
-        m_pieces[PieceTypes::kScissors.idx()]
-            .setCell(Cells::kA3)
-            .setCell(Cells::kA6)
-            .setCell(Cells::kB2)
-            .setCell(Cells::kB5)
-            .setCell(Cells::kF3)
-            .setCell(Cells::kF6)
-            .setCell(Cells::kG1)
-            .setCell(Cells::kG4);
-
-        m_pieces[PieceTypes::kWiseOnWise.idx()].setCell(Cells::kB4).setCell(Cells::kF4);
-
-        m_roles[Roles::kWise.idx()] = m_pieces[PieceTypes::kWiseOnWise.idx()];
-        m_roles[Roles::kRock.idx()] = m_pieces[PieceTypes::kRock.idx()];
-        m_roles[Roles::kPaper.idx()] = m_pieces[PieceTypes::kPaper.idx()];
-        m_roles[Roles::kScissors.idx()] = m_pieces[PieceTypes::kScissors.idx()];
-
-        m_stacks = m_pieces[PieceTypes::kWiseOnWise.idx()];
-
-        m_halfmoves = 0;
-
-        regenMailbox();
+        resetFromFen("s-p-r-s-p-r-/p-r-s-wwr-s-p-/6/7/6/P-S-R-WWS-R-P-/R-P-S-R-P-S- w 0 1");
     }
 
-    void Position::regenMailbox() {
-        const auto pieceOnBbs = [this](Cell cell) {
-            Color color;
+    bool Position::resetFromFenParts(std::span<std::string_view> fen) {
+        const auto rows = util::split(fen[0], '/');
 
-            if (colorBb(Colors::kWhite).getCell(cell)) {
-                color = Colors::kWhite;
-            } else if (colorBb(Colors::kBlack).getCell(cell)) {
-                color = Colors::kBlack;
-            } else {
-                return Pieces::kNone;
-            }
+        if (rows.size() != 7) {
+            return false;
+        }
 
-            for (usize idx = 0; idx < PieceTypes::kNone.idx(); ++idx) {
-                if (m_pieces[idx].getCell(cell)) {
-                    return PieceType::fromRaw(idx).withColor(color);
+        m_mailbox.fill(Pieces::kNone);
+
+        u8 cellIdx = 0;
+
+        for (i32 rowIdx = 6; rowIdx >= 0; --rowIdx) {
+            const auto columnCount = 6 + (rowIdx & 1);
+
+            auto& row = rows[rowIdx];
+            usize columnIdx = 0;
+
+            for (usize i = 0; i < row.size(); ++i) {
+                if (columnIdx >= columnCount) {
+                    return false;
+                }
+
+                const auto c = row[i];
+
+                if (const auto emptySquares = util::tryParseDigit(c)) {
+                    columnIdx += *emptySquares;
+                    cellIdx += *emptySquares;
+                } else if (i + 1 < row.size()) {
+                    const auto pieceStr = std::string_view{row}.substr(i++, 2);
+                    if (const auto piece = Piece::fromStr(pieceStr); piece != Pieces::kNone) {
+                        m_mailbox[cellIdx++] = piece;
+                        ++columnIdx;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
                 }
             }
 
-            assert(false);
-
-            return Pieces::kNone;
-        };
-
-        for (u8 cellId = 0; cellId < Cells::kNone.raw(); ++cellId) {
-            const auto cell = Cell::fromRaw(cellId);
-            m_mailbox[cell.idx()] = pieceOnBbs(cell);
+            if (columnIdx != columnCount) {
+                return false;
+            }
         }
+
+        m_colors = {};
+        m_pieces = {};
+        m_roles = {};
+        m_stacks = Bitboards::kEmpty;
+
+        for (cellIdx = 0; cellIdx < Cells::kCount; ++cellIdx) {
+            const auto cell = Cell::fromRaw(cellIdx);
+            if (const auto piece = m_mailbox[cellIdx]; piece != Pieces::kNone) {
+                m_colors[piece.color().idx()].setCell(cell);
+                m_pieces[piece.type().idx()].setCell(cell);
+                m_roles[piece.role().idx()].setCell(cell);
+
+                if (piece.isStack()) {
+                    m_stacks.setCell(cell);
+                }
+            }
+        }
+
+        if (fen[1] == "w") {
+            m_whiteToMove = true;
+        } else if (fen[1] == "b") {
+            m_whiteToMove = false;
+        } else {
+            return false;
+        }
+
+        if (!util::tryParse(m_halfmoves, fen[2]) || !util::tryParse(m_fullmoves, fen[3])) {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Position::resetFromFen(std::string_view fen) {
+        const auto split = util::split(fen, ' ');
+
+        if (split.size() != 4) {
+            return false;
+        }
+
+        std::vector<std::string_view> views{};
+        views.reserve(split.size());
+
+        for (const auto& str : split) {
+            views.push_back(str);
+        }
+
+        return resetFromFenParts(views);
     }
 } // namespace octachoron

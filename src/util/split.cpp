@@ -16,16 +16,25 @@
  * along with Octachoron. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "types.h"
+#include "split.h"
 
-#include <iostream>
+#include <sstream>
 
-#include "position.h"
+namespace octachoron::util {
+    auto split(std::string_view str, char delim) -> std::vector<std::string> {
+        std::vector<std::string> result{};
 
-using namespace octachoron;
+        //TODO C++23: ispanstream
+        std::istringstream stream{std::string{str}};
 
-i32 main() {
-    const auto startpos = Position::startpos();
-    std::cout << startpos << std::endl;
-    return 0;
-}
+        for (std::string token{}; std::getline(stream, token, delim);) {
+            if (token.empty()) {
+                continue;
+            }
+
+            result.push_back(token);
+        }
+
+        return result;
+    }
+} // namespace octachoron::util

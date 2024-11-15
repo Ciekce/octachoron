@@ -16,16 +16,13 @@
  * along with Octachoron. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "types.h"
+#pragma once
 
-#include <iostream>
+#include "../types.h"
 
-#include "position.h"
+#include <string>
+#include <vector>
 
-using namespace octachoron;
-
-i32 main() {
-    const auto startpos = Position::startpos();
-    std::cout << startpos << std::endl;
-    return 0;
+namespace octachoron::util {
+    auto split(std::string_view str, char delim) -> std::vector<std::string>;
 }

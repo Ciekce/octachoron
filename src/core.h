@@ -22,6 +22,8 @@
 
 #include <cassert>
 #include <iostream>
+#include <optional>
+#include <string_view>
 
 namespace octachoron {
     class Color {
@@ -83,6 +85,8 @@ namespace octachoron {
         static constexpr usize kCount = kNone.idx();
     };
 
+    class PieceType;
+
     class Role {
     public:
         constexpr Role() = default;
@@ -98,9 +102,30 @@ namespace octachoron {
             return static_cast<usize>(m_id);
         }
 
+        [[nodiscard]] constexpr PieceType pieceType() const;
+
         [[nodiscard]] static constexpr Role fromRaw(u8 id) {
             assert(id <= kNoneId);
             return Role{id};
+        }
+
+        [[nodiscard]] static constexpr Role fromChar(char c) {
+            switch (c) {
+                case 'W':
+                case 'w':
+                    return Role{kWiseId};
+                case 'R':
+                case 'r':
+                    return Role{kRockId};
+                case 'P':
+                case 'p':
+                    return Role{kPaperId};
+                case 'S':
+                case 's':
+                    return Role{kScissorsId};
+                default:
+                    return Role{kNoneId};
+            }
         }
 
         [[nodiscard]] constexpr explicit operator bool() const {
@@ -180,13 +205,13 @@ namespace octachoron {
 
         [[nodiscard]] constexpr PieceType stackedOn(PieceType other) const {
             assert(m_id != kNoneId);
-            assert(m_id != kWiseId);
+            assert(m_id != kWiseId || other.m_id == kWiseId);
             assert(m_id <= kScissorsId);
 
             assert(other.m_id != kNoneId);
             assert(other.m_id <= kScissorsId);
 
-            return fromRaw((other.m_id << 2) | m_id);
+            return fromRaw(0b10000 | (other.m_id << 2) | m_id);
         }
 
         [[nodiscard]] static constexpr PieceType fromRaw(u8 id) {
@@ -262,6 +287,11 @@ namespace octachoron {
             return stream;
         }
     };
+
+    constexpr PieceType Role::pieceType() const {
+        assert(*this != Roles::kNone);
+        return PieceType::fromRaw(m_id);
+    }
 
     struct PieceTypes {
         PieceTypes() = delete;
@@ -351,6 +381,39 @@ namespace octachoron {
         [[nodiscard]] static constexpr Piece fromRaw(u8 id) {
             assert(id <= kNoneId);
             return Piece{id};
+        }
+
+        [[nodiscard]] static constexpr Piece fromStr(std::string_view str) {
+            if (str.length() != 2) {
+                return Piece{kNoneId};
+            }
+
+            if (str[1] == '-') {
+                const auto role = Role::fromChar(str[0]);
+
+                if (role == Roles::kNone) {
+                    return Piece{kNoneId};
+                }
+
+                const auto color = std::islower(str[0]) ? Colors::kBlack : Colors::kWhite;
+                return role.pieceType().withColor(color);
+            }
+
+            const auto lowerRole = Role::fromChar(str[0]);
+            const auto upperRole = Role::fromChar(str[1]);
+
+            if (lowerRole == Roles::kNone || upperRole == Roles::kNone) {
+                return Piece{kNoneId};
+            }
+
+            const auto lowerColor = std::islower(str[0]) ? Colors::kBlack : Colors::kWhite;
+            const auto upperColor = std::islower(str[1]) ? Colors::kBlack : Colors::kWhite;
+
+            if (lowerColor != upperColor) {
+                return Piece{kNoneId};
+            }
+
+            return upperRole.pieceType().stackedOn(lowerRole.pieceType()).withColor(upperColor);
         }
 
         [[nodiscard]] constexpr explicit operator bool() const {
