@@ -23,6 +23,8 @@
 
 namespace octachoron {
     Position Position::applyMove(Move move) const {
+        assert(move != kNullMove);
+
         auto newPos = *this;
 
         const auto moving = newPos.pieceOn(move.from());
