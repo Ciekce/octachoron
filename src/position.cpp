@@ -267,6 +267,8 @@ namespace octachoron {
     }
 
     void Position::flipCells(Piece piece, Bitboard mask) {
+        assert(piece != Pieces::kNone);
+
         m_colors[piece.color().idx()] ^= mask;
         m_pieces[piece.type().idx()] ^= mask;
         m_roles[piece.role().idx()] ^= mask;
